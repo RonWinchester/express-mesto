@@ -1,11 +1,5 @@
 const mongoose = require('mongoose');
 
-const ownerSchema = new mongoose.Schema({
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'user',
-  required: true,
-});
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -17,7 +11,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  owner: ownerSchema,
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
   likes: [
     {
       type: [mongoose.Schema.Types.ObjectId],
