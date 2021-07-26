@@ -4,7 +4,12 @@ const ERROR_CODE = 400;
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((card) => res.status(200).send({ card }))
+    .then((card) => {
+      if (card === null) {
+        return res.status(404).send({ message: 'Карточки не найдены' });
+      }
+      return res.status(200).send({ card });
+    })
     .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
 };
 
@@ -19,13 +24,18 @@ module.exports.createCard = (req, res) => {
           message: 'Переданы некорректные данные',
         });
       }
-      return res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      return res.status(500).send({ message: `Произошла ошибка ${err}` });
     });
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (user === null) {
+        return res.status(404).send({ message: 'Пользователь не найден' });
+      }
+      return res.send({ user });
+    })
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
@@ -35,7 +45,14 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((cards) => res.status(200).send({ cards }))
+    .then((cards) => {
+      if (cards === null) {
+        return res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные для поставновки лайка',
+        });
+      }
+      return res.status(200).send({ cards });
+    })
     .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
 };
 
@@ -45,6 +62,13 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .then((cards) => res.status(200).send({ cards }))
+    .then((cards) => {
+      if (cards === null) {
+        return res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные для снятия лайка',
+        });
+      }
+      return res.status(200).send({ cards });
+    })
     .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
 };
