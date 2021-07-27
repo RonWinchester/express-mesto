@@ -19,29 +19,35 @@ module.exports.createUser = (req, res) => {
 
 module.exports.getUsers = (req, res) => {
   User.find({})
+    .orFail(new Error('NoUsers'))
     .then((users) => {
-      if (users === null) {
+      res.status(200).send({ users });
+    })
+    .catch((err) => {
+      if (err.message === 'NoUsers') {
         return res.status(404).send({ message: 'Пользователи не найдены' });
       }
-      return res.status(200).send({ users });
-    })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
+    .orFail(new Error('NotValidId'))
     .then((user) => {
-      if (user === null) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      return res.status(200).send({
+      res.status(200).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
         _id: user.id,
       });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        return res.status(404).send({ message: 'Пользователь не найден' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка' });
+    });
 };
 
 module.exports.editProfile = (req, res) => {
@@ -51,21 +57,20 @@ module.exports.editProfile = (req, res) => {
       name: req.body.name,
       about: req.body.about,
     },
-    { new: true },
+    { new: true, runValidators: true },
   )
+    .orFail(new Error('NotValidId'))
     .then((user) => {
-      if (user === null) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send({ user });
+      res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+        res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные',
         });
-      }
-      return res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
     });
 };
 
@@ -75,20 +80,19 @@ module.exports.editAvatar = (req, res) => {
     {
       avatar: req.body.avatar,
     },
-    { new: true },
+    { new: true, runValidators: true },
   )
+    .orFail(new Error('NotValidId'))
     .then((user) => {
-      if (user === null) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send({ user });
+      res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+        res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные',
         });
-      }
-      return res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
     });
 };
