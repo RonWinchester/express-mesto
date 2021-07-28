@@ -44,9 +44,12 @@ module.exports.getUser = (req, res) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      return res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+        res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные',
+        });
+      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
     });
 };
 
