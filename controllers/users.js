@@ -1,19 +1,35 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 const ERROR_CODE = 400;
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE).send({
-          message: 'Переданы некорректные данные',
-        });
+  User.findOne({ email })
+    .then((userEmail) => {
+      if (userEmail) {
+        return res.status(403).send({ message: 'Пользователь с таким email уже существует' });
       }
-      return res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      return bcrypt.hash(password, 10)
+        .then((hash) => User.create({
+          name,
+          about,
+          avatar,
+          email,
+          password: hash,
+        })
+          .then((user) => res.status(201).send(user))
+          .catch((err) => {
+            if (err.name === 'ValidationError') {
+              return res.status(ERROR_CODE).send({
+                message: 'Переданы некорректные данные',
+              });
+            }
+            return res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+          }));
     });
 };
 
@@ -49,7 +65,9 @@ module.exports.getUser = (req, res) => {
         res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные',
         });
-      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
+      } else {
+        res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      }
     });
 };
 
@@ -73,7 +91,9 @@ module.exports.editProfile = (req, res) => {
         res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные',
         });
-      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
+      } else {
+        res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      }
     });
 };
 
@@ -96,6 +116,8 @@ module.exports.editAvatar = (req, res) => {
         res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные',
         });
-      } else { res.status(500).send({ message: `Произошла ошибка ${err.name}` }); }
+      } else {
+        res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      }
     });
 };
