@@ -1,15 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const router = require('./routes/router');
 const { createUser } = require('./controllers/users');
 const { login } = require('./controllers/login');
+const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
 const app = express();
-
+app.use(cookieParser());
 app.use(helmet());
 app.use(express.json());
 
@@ -18,16 +20,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
-app.use((req, res, next) => {
-  req.user = {
-    _id: '60fd7e2518a33857d412e694',
-  };
 
-  next();
-});
-
+// роуты, не требующие авторизации
 app.post('/signup', createUser);
 app.post('/signin', login);
+
+// авторизация
+app.use(auth);
 
 app.use('/', usersRouter);
 app.use('/', cardsRouter);

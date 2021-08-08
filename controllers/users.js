@@ -47,6 +47,25 @@ module.exports.getUsers = (req, res) => {
     });
 };
 
+module.exports.getUserInfo = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(new Error('NotValidId'))
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.message === 'NotValidId') {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+        res.status(ERROR_CODE).send({
+          message: 'Переданы некорректные данные',
+        });
+      } else {
+        res.status(500).send({ message: `Произошла ошибка ${err.name}` });
+      }
+    });
+};
+
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
     .orFail(new Error('NotValidId'))

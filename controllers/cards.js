@@ -32,10 +32,16 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('NotValidId'))
-    .then((user) => {
-      res.send({ user });
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      console.log(card.owner, req.user._id);
+      if (card.owner.toString() === req.user._id) {
+        Card.findByIdAndRemove(req.params.cardId)
+          .orFail(new Error('NotValidId'))
+          .then((user) => {
+            res.send({ user });
+          });
+      } else { res.status(401).send({ message: 'Нельзя удалить чужую карточку' }); }
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
