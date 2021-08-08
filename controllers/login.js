@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const AuthorizationError = require('../errors/AuthorizationError');
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -13,9 +14,8 @@ module.exports.login = (req, res) => {
       })
         .status(200).send({ token });
     })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
+    .catch(() => {
+      const error = new AuthorizationError('Неправильная почта или пароль');
+      next(error);
     });
 };

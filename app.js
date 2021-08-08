@@ -8,6 +8,7 @@ const router = require('./routes/router');
 const { createUser } = require('./controllers/users');
 const { login } = require('./controllers/login');
 const auth = require('./middlewares/auth');
+const { errorHandler } = require('./middlewares/errorHandler');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -31,6 +32,8 @@ app.use(auth);
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use('/', router);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
