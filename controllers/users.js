@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const BadRequest = require('../errors/BadRequest');
 const NotFoundError = require('../errors/NotFoundError');
-const ForbiddenError = require('../errors/ForbiddenError');
+const ConflictingRequest = require('../errors/ConflictingRequest');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -12,7 +12,7 @@ module.exports.createUser = (req, res, next) => {
   User.findOne({ email })
     .then((userEmail) => {
       if (userEmail) {
-        const emailError = new ForbiddenError('Пользователь с таким email уже существует');
+        const emailError = new ConflictingRequest('Пользователь с таким email уже существует');
         next(emailError);
       }
       return bcrypt.hash(password, 10)

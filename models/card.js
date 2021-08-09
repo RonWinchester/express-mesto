@@ -10,6 +10,13 @@ const userSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(v) {
+        return /^((http|https):\/\/)(www\.)?[A-Za-z0-9]*(([\w#!:.?+=&%@!\-/])*)/.test(v);
+      },
+      message: 'Введите корректную ссылку',
+      required: false,
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

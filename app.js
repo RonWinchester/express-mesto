@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const router = require('./routes/router');
@@ -9,6 +10,7 @@ const { createUser } = require('./controllers/users');
 const { login } = require('./controllers/login');
 const auth = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/errorHandler');
+const { createUserValidation, loginUserValidation } = require('./middlewares/validation');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -23,8 +25,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 // роуты, не требующие авторизации
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post('/signup', createUserValidation, createUser);
+app.post('/signin', loginUserValidation, login);
 
 // авторизация
 app.use(auth);
@@ -32,6 +34,8 @@ app.use(auth);
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use('/', router);
+
+app.use(errors());
 
 app.use(errorHandler);
 
