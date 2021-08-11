@@ -3,6 +3,27 @@ const User = require('../models/user');
 const BadRequest = require('../errors/BadRequest');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictingRequest = require('../errors/ConflictingRequest');
+const jwt = require('jsonwebtoken');
+const AuthorizationError = require('../errors/AuthorizationError');
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        httpOnly: true,
+        sameSite: true,
+      })
+        .status(200).send({ token });
+    })
+    .catch(() => {
+      const error = new AuthorizationError('Неправильная почта или пароль');
+      next(error);
+    });
+};
+
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -23,7 +44,12 @@ module.exports.createUser = (req, res, next) => {
           email,
           password: hash,
         })
-          .then((user) => res.status(201).send(user))
+          .then((user) => res.status(201).send({
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+          }))
           .catch((err) => {
             if (err.name === 'ValidationError') {
               const error = new BadRequest('Переданы некорректные данные');

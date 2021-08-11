@@ -3,14 +3,15 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const dotenv = require('dotenv');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const router = require('./routes/router');
-const { createUser } = require('./controllers/users');
-const { login } = require('./controllers/login');
+const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/errorHandler');
 const { createUserValidation, loginUserValidation } = require('./middlewares/validation');
+dotenv.config();
 
 const { PORT = 3000 } = process.env;
 const app = express();

@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
   const token = req.cookies.jwt;
   let payload;
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    payload = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     throw new AuthorizationError('Необходима авторизация');
   }

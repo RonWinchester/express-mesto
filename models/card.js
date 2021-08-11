@@ -11,11 +11,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator(v) {
-        return /^((http|https):\/\/)(www\.)?[A-Za-z0-9]*(([\w#!:.?+=&%@!\-/])*)/.test(v);
+      validator(link) {
+        return validator.isURL(link);
       },
-      message: 'Введите корректную ссылку',
-      required: false,
     },
   },
   owner: {
