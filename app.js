@@ -11,6 +11,8 @@ const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/errorHandler');
 const { createUserValidation, loginUserValidation } = require('./middlewares/validation');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+
 dotenv.config();
 
 const { PORT = 3000 } = process.env;
@@ -25,6 +27,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
+app.use(requestLogger);
+
 // роуты, не требующие авторизации
 app.post('/signup', createUserValidation, createUser);
 app.post('/signin', loginUserValidation, login);
@@ -35,6 +39,8 @@ app.use(auth);
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
 app.use('/', router);
+
+app.use(errorLogger);
 
 app.use(errors());
 

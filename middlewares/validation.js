@@ -11,6 +11,7 @@ module.exports.createUserValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
+    // eslint-disable-next-line no-useless-escape
     avatar: Joi.string().pattern(/^((http|https):\/\/)(www\.)?([\w+#!:.?+=&%@!\-\/])+\.([\w\.]{2,})([\w+#!:.?+=&%@!\-\/])*\/?$/),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(3),
@@ -45,6 +46,7 @@ module.exports.editProfileValidation = celebrate({
 
 module.exports.editAvatarValidation = celebrate({
   body: Joi.object().keys({
+    // eslint-disable-next-line no-useless-escape
     avatar: Joi.string().required().pattern(/^((http|https):\/\/)(www\.)?([\w+#!:.?+=&%@!\-\/])+\.([\w\.]{2,})([\w+#!:.?+=&%@!\-\/])*\/?$/),
   }),
 });
